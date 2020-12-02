@@ -665,6 +665,7 @@ class Sender:
 		sline  = []			# pipeline commands
 		tosend = None			# next string to send
 		tr = tg = time.time()		# last time a ? or $G was send to grbl
+		last_wait = ''
 
 		while self.thread:
 			t = time.time()
@@ -672,6 +673,10 @@ class Sender:
 			if t-tr > SERIAL_POLL:
 				self.mcontrol.viewStatusReport()
 				tr = t
+				if sline:
+					if last_wait != sline[0]:
+						print("wait on ok: ",repr(sline[0]))
+						last_wait = sline[0]
 
 				#If Override change, attach feed
 				if CNC.vars["_OvChanged"]:
@@ -804,6 +809,7 @@ class Sender:
 
 				self.serial_write(tosend)
 
+				print("sent (",self._gcount,"): ",tosend,end='')
 				#self.serial_write(tosend)
 				#self.serial.flush()
 				self.log.put((Sender.MSG_BUFFER,tosend))
